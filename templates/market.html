@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Research Assistant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body, html {
+            height: 100%;
+            font-family: Arial, sans-serif;
+            background-color: #e9ecef;
+        }
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+        .content {
+            max-width: 900px;
+            width: 100%;
+            background-color: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 2.2rem;
+            color: #343a40;
+        }
+        textarea {
+            width: 100%;
+            height: 150px;
+            padding: 15px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            resize: none;
+        }
+        button {
+            padding: 15px 30px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: block;
+            margin: 0 auto;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #output {
+            margin-top: 30px;
+            padding: 25px;
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            min-height: 200px;
+            font-size: 1.1rem;
+            color: #212529;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="content">
+        <h1>Market Research Assistant</h1>
+        <p>Enter keywords to analyze market trends and identify opportunities.</p>
+
+        <textarea id="keywordInput" placeholder="Enter keywords related to your market..."></textarea>
+        
+        <button id="analyzeButton" onclick="analyzeMarket()">
+            Analyze Market
+        </button>
+
+        <div id="output">
+            Market insights will appear here...
+        </div>
+    </div>
+</div>
+
+<script>
+    async function analyzeMarket() {
+        const keywords = document.getElementById('keywordInput').value;
+        const output = document.getElementById('output');
+
+        if (!keywords) {
+            output.innerHTML = 'Please enter some keywords for analysis!';
+            return;
+        }
+
+        const apiKey = 'Wm7ktWrM166lZAw2y9IYp2L72wFShWJM7IgGm6jy'; // Your AI API key
+        const apiUrl = 'https://api.cohere.ai/v1/generate'; // Your AI API endpoint
+
+        try {
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: 'command-xlarge-nightly', // Use a suitable model
+                    prompt: `Analyze the market trends and opportunities based on the following keywords: "${keywords}". Provide insightful analysis.`,
+                    max_tokens: 300, // Adjust as needed
+                    temperature: 0.7 // Adjust for creativity
+                })
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`HTTP error! Status: ${response.status} - ${errorText}`);
+            }
+
+            const data = await response.json();
+
+            // Display the generated insights in the output div
+            if (data.generations && data.generations.length > 0) {
+                const insights = data.generations[0].text.trim();
+                output.innerHTML = `<h2>Market Insights for "${keywords}"</h2><p>${insights}</p>`;
+            } else {
+                output.innerHTML = 'No insights generated. Try again.';
+            }
+        } catch (error) {
+            console.error('Fetch error:', error);
+            output.innerHTML = `Error generating insights. Please try again later.<br>Error: ${error.message}`;
+        }
+    }
+</script>
+
+</body>
+</html>

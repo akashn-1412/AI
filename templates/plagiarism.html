@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plagiarism-Free Article Rewriter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, html {
+            height: 100%;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            background-color: white;
+        }
+
+        .content {
+            max-width: 900px;
+            width: 100%;
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+        }
+
+        textarea {
+            width: 100%;
+            height: 200px;
+            padding: 15px;
+            margin: 20px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1.2rem;
+            resize: none;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 15px 25px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        #output {
+            margin-top: 30px;
+            padding: 25px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            min-height: 200px;
+            font-size: 1.1rem;
+        }
+
+        /* Loader styles */
+        .loader {
+            display: none;
+            border: 4px solid rgba(255, 255, 255, 0.5);
+            border-top: 4px solid #28a745;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="content">
+        <h1>Plagiarism-Free Article Rewriter</h1>
+        <p>Enter your article or text below to rewrite it in a unique and plagiarism-free way:</p>
+
+        <textarea id="articleInput" placeholder="Paste your article or text here..."></textarea>
+
+        <div class="button-container">
+            <button id="rewriteButton" onclick="rewriteArticle()">
+                Rewrite Article
+            </button>
+            <div class="loader" id="loader"></div>
+        </div>
+
+        <div id="output">
+            Rewritten article will appear here...
+        </div>
+    </div>
+</div>
+
+<script>
+    async function rewriteArticle() {
+        const article = document.getElementById('articleInput').value;
+        const output = document.getElementById('output');
+        const loader = document.getElementById('loader');
+        const rewriteButton = document.getElementById('rewriteButton');
+
+        if (!article) {
+            output.innerHTML = 'Please enter an article to rewrite!';
+            return;
+        }
+
+        const apiKey = 'Wm7ktWrM166lZAw2y9IYp2L72wFShWJM7IgGm6jy'; // Your Cohere API key
+        const apiUrl = 'https://api.cohere.ai/v1/generate'; // Cohere's text generation API
+
+        loader.style.display = 'inline-block';
+        rewriteButton.disabled = true;
+
+        try {
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: 'command-xlarge-nightly',
+                    prompt: `Rewrite the following article in a plagiarism-free way while keeping the original meaning intact: "${article}"`,
+                    max_tokens: 500,
+                    temperature: 0.75
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            if (data.generations && data.generations.length > 0) {
+                const rewrittenArticle = data.generations[0].text.trim();
+                output.innerHTML = `<h2>Rewritten Article</h2><p>${rewrittenArticle}</p>`;
+            } else {
+                output.innerHTML = 'No article rewritten. Try again.';
+            }
+        } catch (error) {
+            output.innerHTML = `Error rewriting article. Please try again later. <br>Error: ${error.message}`;
+            console.error('Error:', error);
+        } finally {
+            loader.style.display = 'none';
+            rewriteButton.disabled = false;
+        }
+    }
+</script>
+
+</body>
+</html>

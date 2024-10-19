@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Description Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .button-container {
+            display: flex;
+            justify-content: space-between; /* Aligns button and loader */
+            align-items: center; /* Centers items vertically */
+        }
+        button {
+            flex: 1; /* Takes full width of the flex container */
+            padding: 10px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #output {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            min-height: 100px;
+        }
+        /* Loader styles */
+        .loader {
+            display: none; /* Initially hidden */
+            border: 4px solid rgba(255, 255, 255, 0.5);
+            border-top: 4px solid #007BFF;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            margin-left: 10px; /* Space between button and loader */
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="content">
+        <h1>YouTube Description Generator</h1>
+        <p>Enter your video topic or keywords to generate a description:</p>
+
+        <input type="text" id="descriptionInput" placeholder="Enter video topic or keywords" />
+
+        <div class="button-container">
+            <button id="generateButton" onclick="generateDescription()">
+                Generate Description
+            </button>
+            <div class="loader" id="loader"></div>
+        </div>
+
+        <div id="output">
+            Generated YouTube description will appear here...
+        </div>
+    </div>
+</div>
+
+<script>
+    async function generateDescription() {
+        const topic = document.getElementById('descriptionInput').value;
+        const output = document.getElementById('output');
+        const loader = document.getElementById('loader');
+        const generateButton = document.getElementById('generateButton');
+
+        if (!topic) {
+            output.innerHTML = 'Please enter a topic or keywords!';
+            return;
+        }
+
+        const apiKey = 'Wm7ktWrM166lZAw2y9IYp2L72wFShWJM7IgGm6jy'; // Your Cohere API key
+        const apiUrl = 'https://api.cohere.ai/v1/generate'; // Cohere's text generation API
+
+        loader.style.display = 'inline-block';
+        generateButton.disabled = true;
+
+        try {
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: 'command-xlarge-nightly',
+                    prompt: `Generate a detailed and SEO-friendly YouTube video description for the topic: "${topic}". Include call-to-actions and keywords for ranking.`,
+                    max_tokens: 200,
+                    temperature: 0.75
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            if (data.generations && data.generations.length > 0) {
+                const description = data.generations[0].text.trim();
+                output.innerHTML = `<h2>Generated YouTube Description for "${topic}"</h2><p>${description}</p>`;
+            } else {
+                output.innerHTML = 'No description generated. Try again.';
+            }
+        } catch (error) {
+            output.innerHTML = `Error generating description. Please try again later. <br>Error: ${error.message}`;
+            console.error('Error:', error);
+        } finally {
+            loader.style.display = 'none';
+            generateButton.disabled = false;
+        }
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate Blog Titles using Cohere AI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .button-container {
+            display: flex;
+            justify-content: space-between; /* Aligns button and loader */
+            align-items: center; /* Centers items vertically */
+        }
+        button {
+            flex: 1; /* Takes full width of the flex container */
+            padding: 10px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #output {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            min-height: 100px;
+        }
+        /* Loader styles */
+        .loader {
+            display: none; /* Initially hidden */
+            border: 4px solid rgba(255, 255, 255, 0.5);
+            border-top: 4px solid #007BFF;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            margin-left: 10px; /* Space between button and loader */
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Blog Title Generator</h1>
+    <p>Enter a topic below, and generate blog titles:</p>
+
+    <input type="text" id="titleInput" placeholder="Enter a topic here" />
+
+    <div class="button-container">
+        <button id="generateButton" onclick="generateTitles()">
+            Generate Titles
+        </button>
+        <div class="loader" id="loader"></div> <!-- Loader element -->
+    </div>
+
+    <div id="output">
+        Generated titles will appear here...
+    </div>
+</div>
+
+<script>
+    async function generateTitles() {
+        const topic = document.getElementById('titleInput').value;
+        const output = document.getElementById('output');
+        const loader = document.getElementById('loader');
+        const generateButton = document.getElementById('generateButton');
+
+        if (!topic) {
+            output.innerHTML = 'Please enter a topic!';
+            return;
+        }
+
+        const apiKey = 'Wm7ktWrM166lZAw2y9IYp2L72wFShWJM7IgGm6jy'; // Your Cohere API key
+        const apiUrl = 'https://api.cohere.ai/v1/generate'; // Cohere's text generation API
+
+        // Show the loader and disable the button
+        loader.style.display = 'inline-block';
+        generateButton.disabled = true;
+
+        try {
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: 'command-xlarge-nightly', // Use a suitable model
+                    prompt: `Generate at least ten engaging blog titles for the topic: "${topic}"`, // Generate at least 10 blog titles based on the topic
+                    max_tokens: 500, // Allow for reasonable content generation
+                    temperature: 0.7 // Adjust for creativity
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            // Display the generated content in the output div
+            if (data.generations && data.generations.length > 0) {
+                const titles = data.generations[0].text.trim().split('\n').filter(title => title); // Split titles by new lines
+                output.innerHTML = `<h2>Generated Titles for "${topic}"</h2>${titles.map(title => `<div>${title.trim()}</div>`).join('')}`; // Display titles on new lines
+            } else {
+                output.innerHTML = 'No titles generated. Try again.';
+            }
+        } catch (error) {
+            output.innerHTML = `Error generating titles. Please try again later. <br>Error: ${error.message}`;
+            console.error('Error:', error);
+        } finally {
+            // Hide the loader and enable the button after the operation
+            loader.style.display = 'none';
+            generateButton.disabled = false;
+        }
+    }
+</script>
+
+</body>
+</html>

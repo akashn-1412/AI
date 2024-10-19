@@ -1,0 +1,7 @@
+Flask==2.1.1
+Jinja2==3.1.2
+Werkzeug==2.1.2
+MarkupSafe==2.1.1
+itsdangerous==2.1.1
+gunicorn==20.1.0   # For deployment purposes (optional)
+requests==2.27.1   # If you're making HTTP requests (optional)
